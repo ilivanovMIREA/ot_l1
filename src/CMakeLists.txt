@@ -23,11 +23,11 @@ set_target_properties(test_version_cli PROPERTIES
         )
 
 target_link_libraries(helloworld_cli 
-          pthread
+          hom
         )
 
 target_link_libraries(test_version_cli
-        pthread          
+        hom          
 	${Boost_LIBRARIES}
           
         )
