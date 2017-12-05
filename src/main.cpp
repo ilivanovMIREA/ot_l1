@@ -1,6 +1,6 @@
 #include <iostream>
 #include <spdlog/spdlog.h>
-#include "version.h"
+#include "../bin/version.h"
 
 int main(){
   auto logger = spdlog::stdout_logger_mt("console");

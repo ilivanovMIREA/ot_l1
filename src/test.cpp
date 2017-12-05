@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE test_version
-#include "version.h"
+
 #include <boost/test/unit_test.hpp>
+#include "../bin/version.h"
 
 BOOST_AUTO_TEST_SUITE(test_version)
 
