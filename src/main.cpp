@@ -137,11 +137,6 @@ void reverse_sort(std::vector<ip_v> &ip_pool){
 }
 
 int main(){
-  auto logger = spdlog::stdout_logger_mt("console");
-  logger->info("version {} was 1 started", version());
-  
-
-  //std::cout << "Hello, World!";
   
   try
     {
