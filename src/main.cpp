@@ -9,7 +9,6 @@
 
 #include <algorithm>    // std::copy_if, std::distance
 
-
 using ip_v = std::vector<std::string>;
 
 // ("",  '.') -> [""]
@@ -39,9 +38,9 @@ auto split(const std::string &str, char d)
     return r;
 }
 
-void ip_print(std::vector<ip_v> &ip_filter){
+void ip_print_int(std::vector<std::vector<int>> &ip_filter){
      for(auto ip = 0; ip < ip_filter.size(); ip++){
-        for(std::vector<std::string>::const_iterator ip_part = ip_filter[ip].cbegin(); ip_part != ip_filter[ip].cend(); ++ip_part)
+        for(std::vector<int>::const_iterator ip_part = ip_filter[ip].cbegin(); ip_part != ip_filter[ip].cend(); ++ip_part)
         {
             if (ip_part != ip_filter[ip].cbegin())
             {
@@ -53,6 +52,7 @@ void ip_print(std::vector<ip_v> &ip_filter){
     }
 }
 
+
 template<typename T, typename ... Args>
 auto filter(T &ip_pool, Args ... args)
 {   
@@ -63,93 +63,45 @@ auto filter(T &ip_pool, Args ... args)
         moreone = true;
     }
     
-    std::vector<ip_v> ip_filter(ip_pool.size());
-    //std::vector<ip_v> ip_f(ip_pool.size());
+    std::vector<std::vector<int>> ip_filter(ip_pool.size());
+    
 
     if(moreone == true){
         int a = ab[0], b = ab[1];
-        auto it = std::copy_if (ip_pool.begin(), ip_pool.end(), ip_filter.begin(), [a,b](ip_v ip){return (std::stoi(ip[0],nullptr,10) == a 
-            && std::stoi(ip[1],nullptr,10) == b);});
+        auto it = std::copy_if (ip_pool.begin(), ip_pool.end(), ip_filter.begin(), 
+            [a,b](std::vector<int> ip){
+
+                int myints[] = {a,b,0,0};
+                std::pair<std::vector<int>::iterator,int*> mypair;
+                mypair = std::mismatch (ip.begin(), ip.end(), myints);
+                return *mypair.second == 0;
+
+            });
         
         ip_filter.resize(std::distance(ip_filter.begin(),it));  // shrink container to new size
     }
     else
     {
         int a = ab[0];
-        auto it = std::copy_if (ip_pool.begin(), ip_pool.end(), ip_filter.begin(), [a](ip_v ip){ return (std::stoi(ip[0],nullptr,10) == a);} );
-        ip_filter.resize(std::distance(ip_filter.begin(),it));  // shrink container to new size
+        auto it = std::copy_if (ip_pool.begin(), ip_pool.end(), ip_filter.begin(), 
+            [a](std::vector<int> ip){
+                int myints[] = {a,0,0,0};
+                std::pair<std::vector<int>::iterator,int*> mypair;
+                mypair = std::mismatch (ip.begin(), ip.end(), myints);
+                return *mypair.second !=a;
+            });
+        
+        ip_filter.resize(std::distance(ip_filter.begin(),it));
     };
 
     return ip_filter;
 }
 
-auto filter_any(std::vector<ip_v> &ip_pool, int a){
-    std::vector<ip_v> ip_filter(ip_pool.size());
-    auto it = std::copy_if (ip_pool.begin(), ip_pool.end(), ip_filter.begin(), [a](ip_v ip){return (std::stoi(ip[0],nullptr,10) == a 
-                                || std::stoi(ip[1],nullptr,10) == a 
-                                || std::stoi(ip[2],nullptr,10) == a 
-                                || std::stoi(ip[3],nullptr,10) == a);});
+auto filter_any(std::vector<std::vector<int>> &ip_pool, int a){
+    std::vector<std::vector<int>> ip_filter(ip_pool.size());
+    auto it = std::copy_if (ip_pool.begin(), ip_pool.end(), ip_filter.begin(), [a](std::vector<int> ip){return std::any_of((ip).cbegin(), (ip).cend(), [a](int i){return i == a;});});
     ip_filter.resize(std::distance(ip_filter.begin(),it));
-
     return ip_filter;
-}
-
-void reverse_sort(std::vector<ip_v> &ip_pool){
-    for(auto i = 0; i<4; i++){
-        for(auto ip = 0; ip < ip_pool.size()-1; ip++){
-          int min1 = std::stoi(ip_pool[ip][0],nullptr,10);
-          int min2 = std::stoi(ip_pool[ip][1],nullptr,10);
-          int min3 = std::stoi(ip_pool[ip][2],nullptr,10);
-          int min4 = std::stoi(ip_pool[ip][3],nullptr,10);
-          int imin = ip;
-          auto ipmin = ip_pool[ip];
-          
-          for(auto ip_b = ip+1; ip_b < ip_pool.size(); ip_b++){
-              
-              std::vector<int> v_min = {std::stoi(ip_pool[ip_b][0],nullptr,10), 
-                                        std::stoi(ip_pool[ip_b][1],nullptr,10),
-                                        std::stoi(ip_pool[ip_b][2],nullptr,10),
-                                        std::stoi(ip_pool[ip_b][3],nullptr,10)};
-  
-              if(i == 0 && v_min[0] > min1){
-                  min1 = v_min[0];
-                  ipmin = ip_pool[ip_b];
-                  imin = ip_b;
-              }
-
-              if(i == 1 
-                && v_min[0] == min1
-                && v_min[1] > min2){
-                  min2 = v_min[1];
-                  ipmin = ip_pool[ip_b];
-                  imin = ip_b;
-                }
-
-              if(i == 2 
-                && v_min[0] == min1
-                && v_min[1] == min2
-                && v_min[2] > min3){
-                  min3 = v_min[2];
-                  ipmin = ip_pool[ip_b];
-                  imin = ip_b;
-                }
-
-              if(i == 3 
-                && v_min[0] == min1
-                && v_min[1] == min2
-                && v_min[2] == min3
-                && v_min[3] > min4){
-                  min4 = v_min[3];
-                  ipmin = ip_pool[ip_b];
-                  imin = ip_b;
-    
-              }
-          }
-
-          ip_pool[imin] = ip_pool[ip];
-          ip_pool[ip] = ipmin;
-        }
-    }
 }
 
 
@@ -158,17 +110,28 @@ int main(int argc, char const *argv[])
 {
     try
     {
-        std::vector<ip_v> ip_pool;
+        std::vector<std::vector<std::string>> ip_pool;
 
         for(std::string line; std::getline(std::cin, line);)
         {
-                ip_v v = split(line, '\t');
+                ip_v v = split(line, '\t');                
                 ip_pool.push_back(split(v.at(0), '.'));
         }
         
+        std::vector<std::vector<int>> ip_pool_int;
+        
+        for(auto i=ip_pool.begin(); i!=ip_pool.end(); ++i){
+            std::vector<int> temp_int;
+            temp_int.push_back(std::stoi((*i)[0],nullptr,10));
+            temp_int.push_back(std::stoi((*i)[1],nullptr,10));
+            temp_int.push_back(std::stoi((*i)[2],nullptr,10));
+            temp_int.push_back(std::stoi((*i)[3],nullptr,10));
+            ip_pool_int.push_back(temp_int);    
+        }        
         // TODO reverse lexicographically sort
-        reverse_sort(ip_pool);  
-        ip_print(ip_pool);
+        
+        std::sort(begin(ip_pool_int), end(ip_pool_int), std::greater<std::vector<int>>());
+        ip_print_int(ip_pool_int);
 
         // 222.173.235.246
         // 222.130.177.64
@@ -179,9 +142,8 @@ int main(int argc, char const *argv[])
         // 1.1.234.8
 
         
-        //filter(ip_pool, 1);
-        std::vector<ip_v> ip_filter1 = filter(ip_pool, 1);
-        ip_print(ip_filter1);
+        std::vector<std::vector<int>> ip_filter1 = filter(ip_pool_int, 1);
+        ip_print_int(ip_filter1);
 
         // TODO filter by first byte and output
         // ip = filter(1)
@@ -192,8 +154,8 @@ int main(int argc, char const *argv[])
         // 1.29.168.152
         // 1.1.234.8
 
-        std::vector<ip_v> ip_filter2 = filter(ip_pool, 46, 70);
-        ip_print(ip_filter2);
+        std::vector<std::vector<int>> ip_filter2 = filter(ip_pool_int, 46, 70);
+        ip_print_int(ip_filter2);
 
         // TODO filter by first and second bytes and output
         // ip = filter(46, 70)
@@ -203,8 +165,8 @@ int main(int argc, char const *argv[])
         // 46.70.113.73
         // 46.70.29.76
 
-        std::vector<ip_v> ip_filter3 = filter_any(ip_pool, 46);
-        ip_print(ip_filter3);
+        std::vector<std::vector<int>> ip_filter3 = filter_any(ip_pool_int, 46);
+        ip_print_int(ip_filter3);
 
 
         // TODO filter by any byte and output
